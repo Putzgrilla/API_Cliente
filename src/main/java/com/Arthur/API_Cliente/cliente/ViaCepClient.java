@@ -1,7 +1,7 @@
-package com.Arthur.API_Cliente.Cliente;
+package com.Arthur.API_Cliente.cliente;
 
 
-import com.Arthur.API_Cliente.modelDto.ViaCepDTO;
+import com.Arthur.API_Cliente.DTO.ViaCepDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

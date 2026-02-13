@@ -1,6 +1,6 @@
-package com.Arthur.API_Cliente.Config;
+package com.Arthur.API_Cliente.config;
 
-import com.Arthur.API_Cliente.Cliente.ViaCepClient;
+import com.Arthur.API_Cliente.cliente.ViaCepClient;
 import com.Arthur.API_Cliente.entity.Cliente;
 import com.Arthur.API_Cliente.entity.Endereco;
 import com.Arthur.API_Cliente.repository.ClienteRepository;
@@ -22,7 +22,7 @@ public class DataLoaderConfig {
             Cliente cliente1 = new Cliente();
             cliente1.setNome("João Silva");
             cliente1.setNascimento(LocalDate.of(2003, 12, 10));
-            Endereco endereco1 = viaCepService.buscar("01310100");
+            Endereco endereco1 = viaCepService.buscarEnderecoPorCep("01310100");
             endereco1.setCliente(cliente1);
             endereco1.setNumero("300");
             cliente1.setEndereco(endereco1);
@@ -32,7 +32,7 @@ public class DataLoaderConfig {
             Cliente cliente2 = new Cliente();
             cliente2.setNome("Maria Santos");
             cliente2.setNascimento(LocalDate.of(1995, 5, 20));
-            Endereco endereco2 = viaCepService.buscar("01310100");
+            Endereco endereco2 = viaCepService.buscarEnderecoPorCep("01310100");
             endereco2.setCliente(cliente2);
             endereco2.setNumero("150");
             cliente2.setEndereco(endereco2);

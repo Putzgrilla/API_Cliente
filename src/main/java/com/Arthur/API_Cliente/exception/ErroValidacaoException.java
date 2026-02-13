@@ -5,7 +5,7 @@ import lombok.Data;
 
 @AllArgsConstructor
 @Data
-public class ErroValidacao extends RuntimeException {
+public class ErroValidacaoException extends RuntimeException {
     private String campo;
     private String mensagem;
 

@@ -1,4 +1,4 @@
-package com.Arthur.API_Cliente.modelDto;
+package com.Arthur.API_Cliente.DTO;
 
 import com.Arthur.API_Cliente.entity.Cliente;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -16,12 +16,12 @@ public class ClienteDto {
     private EnderecoDTO endereco;
     public  ClienteDto(Cliente cliente){
 this.endereco = new EnderecoDTO (cliente.getEndereco());
-this.idade= setIdade(cliente.getNascimento());
+this.idade= calcularIdade(cliente.getNascimento());
 this.nome= cliente.getNome();
 id= cliente.getId();
 
     }
-    public Integer setIdade(LocalDate nascimento){
+    public Integer calcularIdade(LocalDate nascimento){
 
         LocalDate hoje = LocalDate.now();
         return Period.between(nascimento,hoje).getYears();

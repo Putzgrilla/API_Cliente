@@ -1,27 +1,19 @@
-package com.Arthur.API_Cliente.modelDto;
+package com.Arthur.API_Cliente.DTO;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
-
 @Data
-public class ClienteSalvarDTO {
-
-    @NotBlank(message = "O nome é obrigatório")
+public class ClienteAtualizarDTO {
     @Size(min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres")
     private String nome;
-
-    @NotNull(message = "A data de nascimento é obrigatória")
     @Past(message = "A data de nascimento deve ser uma data passada")
     private LocalDate nascimento;
-
-    @NotBlank(message = "O CEP é obrigatório")
     @Pattern(regexp = "\\d{5}-?\\d{3}", message = "CEP inválido")
     private String cep;
 
-    @NotBlank(message = "O número do endereço é obrigatório")
     private String numero;
-
-
 }

@@ -1,9 +1,11 @@
 package com.Arthur.API_Cliente.controller;
 
 
-import com.Arthur.API_Cliente.modelDto.ClienteDto;
-import com.Arthur.API_Cliente.modelDto.ClienteSalvarDTO;
+import com.Arthur.API_Cliente.DTO.ClienteAtualizarDTO;
+import com.Arthur.API_Cliente.DTO.ClienteDto;
+import com.Arthur.API_Cliente.DTO.ClienteSalvarDTO;
 import com.Arthur.API_Cliente.service.ClienteService;
+import jakarta.persistence.PostUpdate;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,30 +23,38 @@ public class ClienteController {
     private final ClienteService clienteService;
 
 
-    @GetMapping("/all")
-    public ResponseEntity<List<ClienteDto>> findAll() {
-        List<ClienteDto> clientes = clienteService.findAll();
+    @GetMapping()
+    public ResponseEntity<List<ClienteDto>> buscarTodos() {
+        List<ClienteDto> clientes = clienteService.buscarTodos();
         return ResponseEntity.ok(clientes);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClienteDto> findById(@PathVariable("id") Long id) {
+    public ResponseEntity<ClienteDto> buscarPorId(@PathVariable("id") Long id) {
 
-        return clienteService.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return clienteService.buscarPorId(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/deletar{id}")
-    public void Apagar(@PathVariable("id") Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> Delete(@PathVariable("id") Long id) {
 
-        clienteService.apagar(id);
-
+        clienteService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/salvar")
     public ResponseEntity<ClienteDto> salvar(@Valid @RequestBody() ClienteSalvarDTO cliente) {
 
-        ClienteDto clienteDto = new ClienteDto(clienteService.save(cliente));
+        ClienteDto clienteDto = new ClienteDto(clienteService.salvar(cliente));
         return ResponseEntity.status(HttpStatus.CREATED).body(clienteDto);
+
+    }
+    @PutMapping("/{id}")
+    public  ResponseEntity<ClienteDto> atualizar(@Valid @RequestBody() ClienteAtualizarDTO cliente, @PathVariable Long id){
+        ClienteDto DTO = clienteService.atualizar(cliente, id);
+        return ResponseEntity.ok(DTO);
+
+
 
     }
 }

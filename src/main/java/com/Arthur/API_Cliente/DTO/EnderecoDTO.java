@@ -1,4 +1,4 @@
-package com.Arthur.API_Cliente.modelDto;
+package com.Arthur.API_Cliente.DTO;
 
 
 import com.Arthur.API_Cliente.entity.Endereco;

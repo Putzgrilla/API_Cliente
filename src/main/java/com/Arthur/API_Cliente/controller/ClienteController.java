@@ -49,7 +49,7 @@ public class ClienteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(clienteDto);
 
     }
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public  ResponseEntity<ClienteDto> atualizar(@Valid @RequestBody() ClienteAtualizarDTO cliente, @PathVariable Long id){
         ClienteDto DTO = clienteService.atualizar(cliente, id);
         return ResponseEntity.ok(DTO);

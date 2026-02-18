@@ -13,11 +13,11 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<String> NotFound(NotFoundException e) {
+    public ResponseEntity<String> notFound(NotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
     @ExceptionHandler(CepInvalidoException.class)
-    public ResponseEntity<String>CepInvalido(CepInvalidoException e){
+    public ResponseEntity<String>cepInvalido(CepInvalidoException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
@@ -26,5 +26,10 @@ public class GlobalExceptionHandler {
         List<ErroValidacaoException> erros =e.getBindingResult().getFieldErrors().stream().map(p-> new ErroValidacaoException(p.getField(),p.getDefaultMessage())).toList();
         List<ErroValidacaoDTO> DTO = erros.stream().map(ErroValidacaoDTO::new).toList();
         return ResponseEntity.badRequest().body(DTO);
+    }
+    @ExceptionHandler(ServicoIndisponivelExeption.class)
+    public ResponseEntity<String> erroApiCep(ServicoIndisponivelExeption e){
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(e.getMessage());
     }
 }

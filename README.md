@@ -10,7 +10,9 @@ API RESTful desenvolvida com **Spring Boot** para gerenciamento de clientes, com
 - Spring Boot
 - Spring Data JPA
 - Spring Cloud OpenFeign
-- Hibernate / H2 (ou banco relacional de sua escolha)
+- Resilience4j (Circuit Breaker)
+- MapStruct
+- Hibernate / H2
 - Lombok
 - Bean Validation (Jakarta)
 
@@ -24,38 +26,44 @@ O projeto segue a separação clara de responsabilidades entre as camadas **Cont
 ### 2. DTOs (Data Transfer Objects)
 O projeto nunca expõe as entidades diretamente nas respostas da API. São utilizados DTOs específicos para cada operação:
 - `ClienteSalvarDTO` — dados obrigatórios para criação de um cliente.
-- `ClienteAtualizarDTO` — campos opcionais para atualização parcial.
-- `ClienteDto` — modelo de resposta, com lógica de negócio como cálculo de idade.
+- `ClienteAtualizarDTO` — campos opcionais para atualização parcial (todos os campos são nullable).
+- `ClienteDto` — modelo de resposta, com cálculo de idade derivado da data de nascimento.
 - `EnderecoDTO` — representação do endereço na resposta.
+- `ViaCepDTO` — mapeamento da resposta da API externa ViaCEP.
 
 Essa abordagem protege a integridade do modelo de domínio e evita expor detalhes internos da aplicação.
 
-### 3. Validação de Dados com Bean Validation
+### 3. Mapeamento com MapStruct
+A conversão entre entidades e DTOs é feita de forma declarativa com **MapStruct** através das interfaces `ClienteMapper` e `EnderecoMapper`. O cálculo de idade é realizado diretamente no mapper via expressão Java, mantendo o serviço focado na lógica de negócio.
+
+### 4. Validação de Dados com Bean Validation
 As entradas do usuário são validadas declarativamente com anotações como `@NotBlank`, `@NotNull`, `@Past`, `@Size` e `@Pattern`. Isso centraliza as regras de validação nos DTOs, mantendo o código limpo e sem validações manuais espalhadas no serviço ou controller.
 
-### 4. Tratamento Global de Exceções
+### 5. Tratamento Global de Exceções
 Um `@RestControllerAdvice` (`GlobalExceptionHandler`) centraliza o tratamento de erros da aplicação, retornando respostas HTTP padronizadas e semânticas:
 - `404 Not Found` para recursos inexistentes.
 - `400 Bad Request` para CEP inválido ou falhas de validação.
+- `503 Service Unavailable` para falhas na integração com o ViaCEP.
 
 Isso elimina blocos try/catch nos controllers e garante respostas consistentes para o consumidor da API.
 
-### 5. Integração com ViaCEP via OpenFeign
-A integração com a API externa é feita de forma declarativa com o **Spring Cloud OpenFeign**, mantendo o código limpo e testável. A lógica de conversão fica isolada no `ViaCepService`, que também valida se o CEP retornado é válido antes de prosseguir.
+### 6. Integração com ViaCEP via OpenFeign
+A integração com a API externa é feita de forma declarativa com o **Spring Cloud OpenFeign**, mantendo o código limpo e testável. A lógica de conversão e validação do CEP fica isolada no `ViaCepService`, que verifica o campo `erro` retornado pela API antes de prosseguir.
 
-### 6. Resiliência com Retry no Feign
-O `FeignConfig` configura uma política de retry com parâmetros externalizados no `application.properties` (`period`, `maxPeriod`, `maxAttempts`). Isso torna a aplicação mais resiliente a falhas transitórias na chamada ao ViaCEP.
+### 7. Resiliência com Circuit Breaker e Retry
+- **Circuit Breaker** (Resilience4j): o `ViaCepService` utiliza `@CircuitBreaker` com um `fallbackMethod`, retornando `503 Service Unavailable` quando o serviço de CEP está indisponível.
+- **Retry** (Feign): o `FeignConfig` configura uma política de retry com parâmetros externalizados no `application.properties` (`period`, `maxPeriod`, `maxAttempts`), tornando a aplicação mais resiliente a falhas transitórias.
 
-### 7. Controle Transacional
-Os métodos de serviço utilizam `@Transactional` com `readOnly = true` para operações de leitura, otimizando a performance, e `@Transactional` padrão para operações de escrita, garantindo consistência dos dados.
+### 8. Controle Transacional
+Os métodos de serviço utilizam `@Transactional(readOnly = true)` para operações de leitura, otimizando a performance, e `@Transactional` padrão para operações de escrita, garantindo consistência dos dados.
 
-### 8. Cascade e Relacionamento JPA
+### 9. Cascade e Relacionamento JPA
 O relacionamento `@OneToOne` entre `Cliente` e `Endereco` usa `CascadeType.ALL` e `orphanRemoval = true`, garantindo que o endereço seja persistido, atualizado e removido junto ao cliente automaticamente.
 
-### 9. Dados de Seed Automáticos
-O `DataLoaderConfig` utiliza `CommandLineRunner` para popular o banco com dados de exemplo na inicialização, facilitando o desenvolvimento e os testes manuais sem necessidade de scripts SQL externos.
+### 10. Dados de Seed Automáticos
+O arquivo `data.sql` popula o banco com dados de exemplo na inicialização, facilitando o desenvolvimento e os testes manuais sem necessidade de scripts externos.
 
-### 10. Ordenação da Resposta JSON
+### 11. Ordenação da Resposta JSON
 `@JsonPropertyOrder` é utilizado nos DTOs de resposta para garantir uma ordem consistente e previsível nos campos JSON, melhorando a legibilidade para quem consome a API.
 
 ---
@@ -67,7 +75,7 @@ O `DataLoaderConfig` utiliza `CommandLineRunner` para popular o banco com dados 
 | `GET` | `/cliente` | Lista todos os clientes |
 | `GET` | `/cliente/{id}` | Busca cliente por ID |
 | `POST` | `/cliente/salvar` | Cria um novo cliente |
-| `PUT` | `/cliente/{id}` | Atualiza um cliente existente |
+| `PATCH` | `/cliente/{id}` | Atualiza parcialmente um cliente existente |
 | `DELETE` | `/cliente/{id}` | Remove um cliente |
 
 ### Exemplo de Body — POST `/cliente/salvar`
@@ -99,6 +107,18 @@ O `DataLoaderConfig` utiliza `CommandLineRunner` para popular o banco com dados 
 }
 ```
 
+### Exemplo de Body — PATCH `/cliente/{id}`
+
+Todos os campos são opcionais. Somente os campos enviados serão atualizados:
+
+```json
+{
+  "nome": "Carlos Lima Atualizado",
+  "cep": "20040-020",
+  "numero": "100"
+}
+```
+
 ---
 
 ## 🚀 Futuras Melhorias
@@ -111,4 +131,3 @@ O `DataLoaderConfig` utiliza `CommandLineRunner` para popular o banco com dados 
 - **Testes unitários** com JUnit 5 e Mockito cobrindo `ClienteService` e `ViaCepService`.
 - **Testes de integração** com `@SpringBootTest` e `MockMvc` para validar os fluxos completos dos controllers.
 - **Testes de contrato** para a integração com o ViaCEP usando WireMock.
----

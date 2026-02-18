@@ -1,27 +1,26 @@
 package com.Arthur.API_Cliente.DTO;
 
 import jakarta.validation.constraints.*;
-import lombok.Data;
 
 import java.time.LocalDate;
 
-@Data
-public class ClienteSalvarDTO {
 
-    @NotBlank(message = "O nome é obrigatório")
-    @Size(min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres")
-    private String nome;
+public record ClienteSalvarDTO(
 
-    @NotNull(message = "A data de nascimento é obrigatória")
-    @Past(message = "A data de nascimento deve ser uma data passada")
-    private LocalDate nascimento;
+        @NotBlank(message = "O nome é obrigatório")
+        @Size(min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres")
+        String nome,
 
-    @NotBlank(message = "O CEP é obrigatório")
-    @Pattern(regexp = "\\d{5}-?\\d{3}", message = "CEP inválido")
-    private String cep;
+        @NotNull(message = "A data de nascimento é obrigatória")
+        @Past(message = "A data de nascimento deve ser uma data passada")
+        LocalDate nascimento,
 
-    @NotBlank(message = "O número do endereço é obrigatório")
-    private String numero;
+        @NotBlank(message = "O CEP é obrigatório")
+        @Pattern(regexp = "\\d{5}-?\\d{3}", message = "CEP inválido")
+        String cep,
 
-
+        @NotBlank(message = "O número do endereço é obrigatório")
+        String numero) {
 }
+
+

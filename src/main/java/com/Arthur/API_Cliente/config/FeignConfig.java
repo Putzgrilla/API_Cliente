@@ -16,7 +16,7 @@ public class FeignConfig {
 
     @Bean
     public Retryer retryer() {
-        // Tenta 3 vezes, esperando 1 segundo entre cada tentativa
+
         return new Retryer.Default(period, maxPeriod, maxAttempts);
     }
 }

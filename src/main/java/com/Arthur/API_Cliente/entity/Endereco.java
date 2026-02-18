@@ -1,10 +1,15 @@
 package com.Arthur.API_Cliente.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
 @Entity
+@AllArgsConstructor
+@RequiredArgsConstructor
+
 public class Endereco {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +26,6 @@ public class Endereco {
     private String localidade;
     @Column
     private String uf;
-    @OneToOne(mappedBy = "endereco")
-    private Cliente cliente;
+
 
 }

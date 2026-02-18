@@ -36,7 +36,7 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> Delete(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable("id") Long id) {
 
         clienteService.deletar(id);
         return ResponseEntity.noContent().build();
@@ -45,7 +45,7 @@ public class ClienteController {
     @PostMapping("/salvar")
     public ResponseEntity<ClienteDto> salvar(@Valid @RequestBody() ClienteSalvarDTO cliente) {
 
-        ClienteDto clienteDto = new ClienteDto(clienteService.salvar(cliente));
+        ClienteDto clienteDto = clienteService.salvar(cliente);
         return ResponseEntity.status(HttpStatus.CREATED).body(clienteDto);
 
     }

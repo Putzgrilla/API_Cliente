@@ -6,6 +6,8 @@ import com.Arthur.API_Cliente.DTO.ClienteSalvarDTO;
 import com.Arthur.API_Cliente.entity.Cliente;
 import com.Arthur.API_Cliente.entity.Endereco;
 import com.Arthur.API_Cliente.exception.NotFoundException;
+
+import com.Arthur.API_Cliente.mapper.ClienteMapper;
 import com.Arthur.API_Cliente.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,12 +22,14 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final ViaCepService viaCepService;
+    private final ClienteMapper clienteMapper;
+
 
     @Transactional(readOnly = true)
     public Optional<ClienteDto> buscarPorId(Long id) {
 
 
-        return clienteRepository.findById(id).map(ClienteDto::new);
+        return clienteRepository.findById(id).map(clienteMapper::clienteParaDto);
 
 
     }
@@ -33,27 +37,24 @@ public class ClienteService {
     @Transactional(readOnly = true)
     public List<ClienteDto> buscarTodos() {
 
-        return clienteRepository.findAll().stream().map(ClienteDto::new).toList();
+        return clienteRepository.findAll().stream().map(clienteMapper::clienteParaDto).toList();
     }
 
     @Transactional()
-    public Cliente salvar(ClienteSalvarDTO clienteSalvarDTO) {
-        Endereco endereco = viaCepService.buscarEnderecoPorCep(clienteSalvarDTO.getCep());
-        endereco.setNumero(clienteSalvarDTO.getNumero());
-        Cliente cliente = new Cliente();
-        cliente.setNascimento(clienteSalvarDTO.getNascimento());
-        cliente.setEndereco(endereco);
-        cliente.setNome(clienteSalvarDTO.getNome());
+    public ClienteDto salvar(ClienteSalvarDTO dto) {
 
-        return clienteRepository.save(cliente);
+        Endereco endereco = viaCepService.buscarEnderecoPorCep(dto.cep(), dto.numero());
+
+        Cliente cliente = clienteMapper.clienteSalvarParaCliente(dto);
+        cliente.setEndereco(endereco);
+
+        return clienteMapper.clienteParaDto(clienteRepository.save(cliente));
     }
 
     @Transactional()
     public void deletar(Long id) {
         if (!clienteRepository.existsById(id)) {
-            throw new NotFoundException(
-                    "Cliente com ID " + id + " não encontrado"
-            );
+            throw new NotFoundException("Cliente com ID " + id + " não encontrado");
         }
         clienteRepository.deleteById(id);
     }
@@ -61,24 +62,12 @@ public class ClienteService {
     @Transactional()
     public ClienteDto atualizar(ClienteAtualizarDTO dto, Long id) {
         Cliente cliente = clienteRepository.findById(id).orElseThrow(() -> new NotFoundException("Cliente nao encontrado"));
-        if (dto.getCep() != null) {
-            Endereco endereco = viaCepService.buscarEnderecoPorCep(dto.getCep());
-            if (dto.getNumero() != null) {
-                endereco.setNumero(dto.getNumero());
-
-            } else {
-                endereco.setNumero(cliente.getEndereco().getNumero());
-            }
-            cliente.setEndereco(endereco);
-
-        }
-        if (dto.getNumero() != null && dto.getCep() == null) {
-            cliente.getEndereco().setNumero(dto.getNumero());
-        }
-        if (dto.getNome() != null) cliente.setNome(dto.getNome());
-        if (dto.getNascimento() != null) cliente.setNascimento(dto.getNascimento());
+        if (dto.cep() != null) cliente.setEndereco(viaCepService.buscarEnderecoPorCep(dto.cep(), dto.numero()));
+        if (dto.nome() != null) cliente.setNome(dto.nome());
+        if (dto.nascimento() != null) cliente.setNascimento(dto.nascimento());
         clienteRepository.save(cliente);
-        return new ClienteDto(cliente);
+        return clienteMapper.clienteParaDto(cliente);
 
     }
+
 }

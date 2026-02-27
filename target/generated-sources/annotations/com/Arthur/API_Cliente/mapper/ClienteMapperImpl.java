@@ -10,14 +10,19 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-02-18T20:25:11-0300",
+    date = "2026-02-21T21:35:36-0300",
     comments = "version: 1.6.3, compiler: javac, environment: Java 21.0.6 (Oracle Corporation)"
 )
 @Component
 public class ClienteMapperImpl implements ClienteMapper {
 
+    private final EnderecoMapper enderecoMapper;
+
     @Autowired
-    private EnderecoMapper enderecoMapper;
+    public ClienteMapperImpl(EnderecoMapper enderecoMapper) {
+
+        this.enderecoMapper = enderecoMapper;
+    }
 
     @Override
     public ClienteDto clienteParaDto(Cliente cliente) {
